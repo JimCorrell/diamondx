@@ -1,2 +1,2 @@
-# diamondx
+# DiamondX
 Precision Baseball

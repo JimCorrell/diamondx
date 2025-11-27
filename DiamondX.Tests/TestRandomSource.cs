@@ -2,24 +2,20 @@ using DiamondX.Core.Random;
 
 namespace DiamondX.Tests;
 
-/// <summary>
-/// Deterministic random source for testing.
-/// Returns values from a predefined queue.
-/// </summary>
-public class TestRandomSource : IRandomSource
+public sealed class TestRandomSource : IRandomSource
 {
     private readonly Queue<double> _values;
 
-    public TestRandomSource(Queue<double> values)
+    public TestRandomSource(IEnumerable<double> values)
     {
-        _values = values ?? throw new ArgumentNullException(nameof(values));
+        _values = new Queue<double>(values);
     }
 
     public double NextDouble()
     {
         if (_values.Count == 0)
         {
-            throw new InvalidOperationException("No more random values available in test queue.");
+            throw new InvalidOperationException("TestRandomSource exhausted.");
         }
         return _values.Dequeue();
     }

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DiamondX.Tests/**" />
+    <Compile Remove="DiamondX.Tests/**/*.cs" />
   </ItemGroup>
 
 </Project>

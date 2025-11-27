@@ -1,31 +1,26 @@
+using System;
 using DiamondX.Core.Models;
 using DiamondX.Core.Random;
 
 namespace DiamondX.Core.Simulation;
 
-/// <summary>
-/// Default implementation of IPlateAppearanceResolver.
-/// Uses the Log5 method for batter-pitcher matchups.
-/// </summary>
-public class PlateAppearanceResolver : IPlateAppearanceResolver
+public sealed class PlateAppearanceResolver : IPlateAppearanceResolver
 {
-    private readonly IRandomSource _random;
+    private readonly IRandomSource _randomSource;
 
-    // League average rates (approximated for modern MLB)
-    private const double LeagueWalkRate = 0.085;
-    private const double LeagueSingleRate = 0.155;
-    private const double LeagueDoubleRate = 0.045;
-    private const double LeagueTripleRate = 0.005;
-    private const double LeagueHomeRunRate = 0.035;
-
-    public PlateAppearanceResolver(IRandomSource random)
+    public PlateAppearanceResolver(IRandomSource randomSource)
     {
-        _random = random ?? throw new ArgumentNullException(nameof(random));
+        _randomSource = randomSource ?? throw new ArgumentNullException(nameof(randomSource));
     }
 
     public AtBatOutcome Resolve(Player batter)
     {
-        double roll = _random.NextDouble();
+        if (batter is null)
+        {
+            throw new ArgumentNullException(nameof(batter));
+        }
+
+        double roll = _randomSource.NextDouble();
 
         if (roll < batter.WalkRate) return AtBatOutcome.Walk;
         roll -= batter.WalkRate;
@@ -42,45 +37,5 @@ public class PlateAppearanceResolver : IPlateAppearanceResolver
         if (roll < batter.HomeRunRate) return AtBatOutcome.HomeRun;
 
         return AtBatOutcome.Out;
-    }
-
-    public AtBatOutcome Resolve(Player batter, Pitcher pitcher)
-    {
-        // Use Log5 to blend batter and pitcher rates
-        double walkRate = Log5(batter.WalkRate, pitcher.WalkRate, LeagueWalkRate);
-        double singleRate = Log5(batter.SingleRate, pitcher.SinglesAllowedRate, LeagueSingleRate);
-        double doubleRate = Log5(batter.DoubleRate, pitcher.DoublesAllowedRate, LeagueDoubleRate);
-        double tripleRate = Log5(batter.TripleRate, pitcher.TriplesAllowedRate, LeagueTripleRate);
-        double homeRunRate = Log5(batter.HomeRunRate, pitcher.HomeRunsAllowedRate, LeagueHomeRunRate);
-
-        double roll = _random.NextDouble();
-
-        if (roll < walkRate) return AtBatOutcome.Walk;
-        roll -= walkRate;
-
-        if (roll < singleRate) return AtBatOutcome.Single;
-        roll -= singleRate;
-
-        if (roll < doubleRate) return AtBatOutcome.Double;
-        roll -= doubleRate;
-
-        if (roll < tripleRate) return AtBatOutcome.Triple;
-        roll -= tripleRate;
-
-        if (roll < homeRunRate) return AtBatOutcome.HomeRun;
-
-        return AtBatOutcome.Out;
-    }
-
-    /// <summary>
-    /// Log5 method: combines batter rate (B), pitcher rate (P), and league rate (L).
-    /// Formula: (B * P) / L, clamped to [0, 1].
-    /// </summary>
-    private static double Log5(double batterRate, double pitcherRate, double leagueRate)
-    {
-        if (leagueRate <= 0) return batterRate;
-
-        double result = (batterRate * pitcherRate) / leagueRate;
-        return Math.Clamp(result, 0.0, 1.0);
     }
 }

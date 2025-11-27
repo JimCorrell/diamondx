@@ -197,40 +197,55 @@ public class Game
 
     public void PlayGame()
     {
-        for (int inning = 1; inning <= 9; inning++)
+        int inning = 1;
+
+        // Play regulation 9 innings
+        while (inning <= 9)
         {
-            _state.BeginHalfInning(inning, HalfInning.Top);
-            Console.WriteLine($"\nTop of Inning {inning} | Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}");
-            PlayHalfInning(_awayTeam, isHomeTeam: false);
-
-            if (inning == 9 && _state.HomeScore > _state.AwayScore)
-            {
-                break;
-            }
-
-            _state.BeginHalfInning(inning, HalfInning.Bottom);
-            Console.WriteLine($"Bottom of Inning {inning} | Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}");
-            PlayHalfInning(_homeTeam, isHomeTeam: true);
+            PlayInning(inning);
+            inning++;
         }
 
-        PrintFinalScore();
+        // Extra innings if tied
+        while (_state.HomeScore == _state.AwayScore)
+        {
+            Console.WriteLine($"\n⚾ EXTRA INNINGS! ⚾");
+            PlayInning(inning);
+            inning++;
+        }
+
+        PrintFinalScore(inning - 1);
     }
 
-    private void PrintFinalScore()
+    private void PlayInning(int inning)
+    {
+        _state.BeginHalfInning(inning, HalfInning.Top);
+        Console.WriteLine($"\nTop of Inning {inning} | Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}");
+        PlayHalfInning(_awayTeam, isHomeTeam: false);
+
+        // Walk-off check: if home team is ahead after top of 9th or later, game over
+        if (inning >= 9 && _state.HomeScore > _state.AwayScore)
+        {
+            return;
+        }
+
+        _state.BeginHalfInning(inning, HalfInning.Bottom);
+        Console.WriteLine($"Bottom of Inning {inning} | Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}");
+        PlayHalfInning(_homeTeam, isHomeTeam: true);
+    }
+
+    private void PrintFinalScore(int totalInnings)
     {
         Console.WriteLine("\n--- Game Over ---");
-        Console.WriteLine($"Final Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}");
+        string inningNote = totalInnings > 9 ? $" ({totalInnings} innings)" : "";
+        Console.WriteLine($"Final Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}{inningNote}");
         if (_state.HomeScore > _state.AwayScore)
         {
             Console.WriteLine($"{_homeTeamName} Win!");
         }
-        else if (_state.AwayScore > _state.HomeScore)
-        {
-            Console.WriteLine($"{_awayTeamName} Win!");
-        }
         else
         {
-            Console.WriteLine("It's a tie!");
+            Console.WriteLine($"{_awayTeamName} Win!");
         }
     }
 }

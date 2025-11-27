@@ -19,14 +19,26 @@ public class Game
     private readonly GameState _state = new();
     private readonly IPlateAppearanceResolver _plateAppearanceResolver;
 
+    private Pitcher _homePitcher;
+    private Pitcher _awayPitcher;
+
     private int _homeBatterIndex;
     private int _awayBatterIndex;
 
     internal GameState State => _state;
     public string HomeTeamName => _homeTeamName;
     public string AwayTeamName => _awayTeamName;
+    public Pitcher HomePitcher => _homePitcher;
+    public Pitcher AwayPitcher => _awayPitcher;
 
-    public Game(List<Player> homeTeam, List<Player> awayTeam, string homeTeamName = "Home", string awayTeamName = "Away", IPlateAppearanceResolver? plateAppearanceResolver = null)
+    public Game(
+        List<Player> homeTeam,
+        List<Player> awayTeam,
+        string homeTeamName = "Home",
+        string awayTeamName = "Away",
+        Pitcher? homePitcher = null,
+        Pitcher? awayPitcher = null,
+        IPlateAppearanceResolver? plateAppearanceResolver = null)
     {
         _homeTeam = homeTeam ?? throw new ArgumentNullException(nameof(homeTeam));
         _awayTeam = awayTeam ?? throw new ArgumentNullException(nameof(awayTeam));
@@ -43,15 +55,35 @@ public class Game
             throw new ArgumentException("Away team must have at least one player.", nameof(awayTeam));
         }
 
+        // Create default pitchers if not provided
+        _homePitcher = homePitcher ?? CreateDefaultPitcher($"{homeTeamName} Starter");
+        _awayPitcher = awayPitcher ?? CreateDefaultPitcher($"{awayTeamName} Starter");
+
         _plateAppearanceResolver = plateAppearanceResolver ?? new PlateAppearanceResolver(new SystemRandomSource());
 
         Console.WriteLine($"--- Game Start: {_awayTeamName} @ {_homeTeamName} ---");
     }
 
-    private AtBatOutcome SimulateAtBat(Player player)
+    private static Pitcher CreateDefaultPitcher(string name)
     {
-        Console.WriteLine($"At bat: {player.Name}");
-        return _plateAppearanceResolver.Resolve(player);
+        // League average pitcher
+        return new Pitcher(
+            name: name,
+            walkRate: 0.08,
+            singlesAllowedRate: 0.15,
+            doublesAllowedRate: 0.045,
+            triplesAllowedRate: 0.005,
+            homeRunsAllowedRate: 0.03,
+            strikeoutRate: 0.22,
+            fatigueThreshold: 75,
+            maxPitchCount: 110
+        );
+    }
+
+    private AtBatOutcome SimulateAtBat(Player player, Pitcher pitcher)
+    {
+        Console.WriteLine($"At bat: {player.Name} vs {pitcher.Name} (Pitch #{pitcher.PitchCount + 1}, Fatigue: {pitcher.FatigueLevel:P0})");
+        return _plateAppearanceResolver.Resolve(player, pitcher);
     }
 
     internal void AdvanceRunners(AtBatOutcome outcome, Player batter, bool isHomeTeam)
@@ -152,12 +184,14 @@ public class Game
     private void PlayHalfInning(List<Player> battingTeam, bool isHomeTeam)
     {
         int batterIndex = isHomeTeam ? _homeBatterIndex : _awayBatterIndex;
+        // Away team bats against home pitcher, home team bats against away pitcher
+        Pitcher pitcher = isHomeTeam ? _awayPitcher : _homePitcher;
 
         while (_state.Outs < 3)
         {
             PrintBases();
             Player currentBatter = battingTeam[batterIndex];
-            AtBatOutcome outcome = SimulateAtBat(currentBatter);
+            AtBatOutcome outcome = SimulateAtBat(currentBatter, pitcher);
 
             switch (outcome)
             {
@@ -187,6 +221,8 @@ public class Game
             _awayBatterIndex = batterIndex;
         }
 
+        // Print pitcher status at end of half-inning
+        Console.WriteLine($"[{pitcher.Name}: {pitcher.PitchCount} pitches, {pitcher.FatigueLevel:P0} fatigue]");
         Console.WriteLine(new string('-', 20));
     }
 

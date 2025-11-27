@@ -1,13 +1,2 @@
-// AtBatOutcome.cs
-
-namespace DiamondX;
-
-public enum AtBatOutcome
-{
-    Out,
-    Walk,
-    Single,
-    Double,
-    Triple,
-    HomeRun
-}
+// Legacy entry point kept for source compatibility.
+// The active outcome enumeration now lives in DiamondX.Core.Models.AtBatOutcome.

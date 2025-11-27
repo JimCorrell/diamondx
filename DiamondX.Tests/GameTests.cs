@@ -13,7 +13,7 @@ public class GameTests
     {
         _batter = new Player("Test Batter", 0.1, 0.2, 0.05, 0.01, 0.05);
         var team1 = new List<Player> { _batter };
-        var team2 = new List<Player> { new Player("Pitcher", 0,0,0,0,0) };
+        var team2 = new List<Player> { new Player("Pitcher", 0, 0, 0, 0, 0) };
         _game = new Game(team1, team2);
     }
 
@@ -27,8 +27,8 @@ public class GameTests
         _game.AdvanceRunners(outcome, _batter, true);
 
         // Assert
-        Assert.That(_game._bases[0], Is.EqualTo(_batter));
-        Assert.That(_game._bases[1], Is.Null);
-        Assert.That(_game._bases[2], Is.Null);
+        Assert.That(_game.State.Bases[0], Is.EqualTo(_batter));
+        Assert.That(_game.State.Bases[1], Is.Null);
+        Assert.That(_game.State.Bases[2], Is.Null);
     }
 }

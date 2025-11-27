@@ -34,6 +34,41 @@ var dodgersLineup = new List<Player>
     new("Miguel Rojas", 0.065, 0.183, 0.037, 0.003, 0.012),
 };
 
+// Pitchers with 2023-ish stats (rates are per plate appearance)
+// Format: new Pitcher(Name, WalkRate, SinglesAllowed, DoublesAllowed, TriplesAllowed, HRAllowed, StrikeoutRate, FatigueThreshold, MaxPitchCount)
+
+// Giants starter - Logan Webb (workhorse, higher fatigue threshold)
+var giantsPitcher = new Pitcher(
+    name: "Logan Webb",
+    walkRate: 0.055,
+    singlesAllowedRate: 0.145,
+    doublesAllowedRate: 0.040,
+    triplesAllowedRate: 0.003,
+    homeRunsAllowedRate: 0.022,
+    strikeoutRate: 0.200,
+    fatigueThreshold: 85,
+    maxPitchCount: 115
+);
+
+// Dodgers starter - Clayton Kershaw (elite but lower durability)
+var dodgersPitcher = new Pitcher(
+    name: "Clayton Kershaw",
+    walkRate: 0.050,
+    singlesAllowedRate: 0.138,
+    doublesAllowedRate: 0.038,
+    triplesAllowedRate: 0.002,
+    homeRunsAllowedRate: 0.028,
+    strikeoutRate: 0.245,
+    fatigueThreshold: 70,
+    maxPitchCount: 100
+);
+
 // Create and play the game
-var simGame = new Game(homeTeam: giantsLineup, awayTeam: dodgersLineup);
+var simGame = new Game(
+    homeTeam: giantsLineup,
+    awayTeam: dodgersLineup,
+    homeTeamName: "Giants",
+    awayTeamName: "Dodgers",
+    homePitcher: giantsPitcher,
+    awayPitcher: dodgersPitcher);
 simGame.PlayGame();

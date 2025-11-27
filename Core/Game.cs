@@ -14,6 +14,8 @@ public class Game
 {
     private readonly List<Player> _homeTeam;
     private readonly List<Player> _awayTeam;
+    private readonly string _homeTeamName;
+    private readonly string _awayTeamName;
     private readonly GameState _state = new();
     private readonly IPlateAppearanceResolver _plateAppearanceResolver;
 
@@ -21,11 +23,15 @@ public class Game
     private int _awayBatterIndex;
 
     internal GameState State => _state;
+    public string HomeTeamName => _homeTeamName;
+    public string AwayTeamName => _awayTeamName;
 
-    public Game(List<Player> homeTeam, List<Player> awayTeam, IPlateAppearanceResolver? plateAppearanceResolver = null)
+    public Game(List<Player> homeTeam, List<Player> awayTeam, string homeTeamName = "Home", string awayTeamName = "Away", IPlateAppearanceResolver? plateAppearanceResolver = null)
     {
         _homeTeam = homeTeam ?? throw new ArgumentNullException(nameof(homeTeam));
         _awayTeam = awayTeam ?? throw new ArgumentNullException(nameof(awayTeam));
+        _homeTeamName = homeTeamName;
+        _awayTeamName = awayTeamName;
 
         if (_homeTeam.Count == 0)
         {
@@ -39,7 +45,7 @@ public class Game
 
         _plateAppearanceResolver = plateAppearanceResolver ?? new PlateAppearanceResolver(new SystemRandomSource());
 
-        Console.WriteLine("--- Game Start ---");
+        Console.WriteLine($"--- Game Start: {_awayTeamName} @ {_homeTeamName} ---");
     }
 
     private AtBatOutcome SimulateAtBat(Player player)
@@ -79,7 +85,7 @@ public class Game
         else
         {
             _state.AddRun(isHomeTeam);
-            Console.WriteLine($"{batter.Name} hits a home run! A run scores!");
+            Console.WriteLine($"{batter.Name} hits a home run! ({(isHomeTeam ? _homeTeamName : _awayTeamName)} now has {(isHomeTeam ? _state.HomeScore : _state.AwayScore)})");
         }
     }
 
@@ -92,7 +98,7 @@ public class Game
         if (first != null && second != null && third != null)
         {
             _state.AddRun(isHomeTeam);
-            Console.WriteLine($"{third.Name} scores!");
+            Console.WriteLine($"{third.Name} scores! ({(isHomeTeam ? _homeTeamName : _awayTeamName)} now has {(isHomeTeam ? _state.HomeScore : _state.AwayScore)})");
             third = second;
             second = first;
             first = batter;
@@ -134,7 +140,7 @@ public class Game
             if (destination >= 3)
             {
                 _state.AddRun(isHomeTeam);
-                Console.WriteLine($"{runner.Name} scores!");
+                Console.WriteLine($"{runner.Name} scores! ({(isHomeTeam ? _homeTeamName : _awayTeamName)} now has {(isHomeTeam ? _state.HomeScore : _state.AwayScore)})");
             }
             else
             {
@@ -194,7 +200,7 @@ public class Game
         for (int inning = 1; inning <= 9; inning++)
         {
             _state.BeginHalfInning(inning, HalfInning.Top);
-            Console.WriteLine($"\nTop of Inning {inning} | Score: Away {_state.AwayScore} - Home {_state.HomeScore}");
+            Console.WriteLine($"\nTop of Inning {inning} | Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}");
             PlayHalfInning(_awayTeam, isHomeTeam: false);
 
             if (inning == 9 && _state.HomeScore > _state.AwayScore)
@@ -203,7 +209,7 @@ public class Game
             }
 
             _state.BeginHalfInning(inning, HalfInning.Bottom);
-            Console.WriteLine($"Bottom of Inning {inning} | Score: Away {_state.AwayScore} - Home {_state.HomeScore}");
+            Console.WriteLine($"Bottom of Inning {inning} | Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}");
             PlayHalfInning(_homeTeam, isHomeTeam: true);
         }
 
@@ -213,14 +219,14 @@ public class Game
     private void PrintFinalScore()
     {
         Console.WriteLine("\n--- Game Over ---");
-        Console.WriteLine($"Final Score: Away {_state.AwayScore} - Home {_state.HomeScore}");
+        Console.WriteLine($"Final Score: {_awayTeamName} {_state.AwayScore} - {_homeTeamName} {_state.HomeScore}");
         if (_state.HomeScore > _state.AwayScore)
         {
-            Console.WriteLine("Home Team Wins!");
+            Console.WriteLine($"{_homeTeamName} Win!");
         }
         else if (_state.AwayScore > _state.HomeScore)
         {
-            Console.WriteLine("Away Team Wins!");
+            Console.WriteLine($"{_awayTeamName} Win!");
         }
         else
         {

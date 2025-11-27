@@ -27,7 +27,7 @@ public class HalfInningFlowTests
         var rolls = new[] { 0.25, 0.75, 0.99, 0.99, 0.99, 0.99, 0.99 };
         var rng = new TestRandomSource(rolls);
         var resolver = new PlateAppearanceResolver(rng);
-        var game = new Game(lineup, away, resolver);
+        var game = new Game(lineup, away, "Home", "Away", resolver);
 
         game.State.BeginHalfInning(1, Core.State.HalfInning.Top);
         // Play until 3 outs with our resolver by calling internal PlayHalfInning? Not exposed.

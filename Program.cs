@@ -35,5 +35,9 @@ var dodgersLineup = new List<Player>
 };
 
 // Create and play the game
-var simGame = new Game(homeTeam: giantsLineup, awayTeam: dodgersLineup);
+var simGame = new Game(
+    homeTeam: giantsLineup,
+    awayTeam: dodgersLineup,
+    homeTeamName: "Giants",
+    awayTeamName: "Dodgers");
 simGame.PlayGame();

@@ -42,6 +42,32 @@ dotnet run --project DiamondX.Console -- -mc -1
 dotnet run --project DiamondX.Console -- -mc -n=50000
 ```
 
+## Multi-Model Orchestration Demo
+
+Run Weather and Baseball models together, with weather affecting gameplay:
+
+```zsh
+dotnet run --project DiamondX.Console -- -o
+```
+
+**Sample Output:**
+
+```text
+╔════════════════════════════════════════════════════════════════╗
+║     ⚾🌤️ DiamondX Multi-Model Orchestration Demo 🌤️⚾       ║
+╚════════════════════════════════════════════════════════════════╝
+
+  Initial Weather: PartlyCloudy, 68°F, 40% humidity, wind 25 mph from right field
+  HR Modifier: -23.4 feet
+
+│  Inning │ Score       │ Weather                    │ HR Mod  │
+│     1   │ DOD 0 - SF 0 │ ☁️ 68°F 💨23mph            │  -21.1ft │
+│     9   │ DOD 0 - SF 5 │ ☀️ 70°F                    │  -11.8ft │
+
+│  Final Weather: Clear, 68°F, 44% humidity, wind 11 mph        │
+│  Simulation Steps: 76                                          │
+```
+
 **Sample Output:**
 
 ```text
@@ -98,9 +124,13 @@ diamondx/
 │   │   ├── Models/
 │   │   ├── Simulation/
 │   │   └── State/
+│   ├── DiamondX.Weather/       # Weather simulation model
+│   │   ├── WeatherConditions.cs
+│   │   └── WeatherSimulation.cs
 │   └── SimulationEngine/       # Generic simulation framework
 │       ├── Core/               # ISimulation, SimulationRunner, metrics
 │       ├── Events/             # Event scheduling and handlers
+│       ├── Orchestration/      # Multi-model coordination
 │       ├── Random/             # Reproducible RNG (seedable)
 │       ├── State/              # Snapshot persistence
 │       └── Time/               # Simulation clock (discrete/fixed-step)

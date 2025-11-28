@@ -265,6 +265,20 @@ dotnet run --project DiamondX.Console -- -mc --season
 dotnet run --project DiamondX.Console -- -mc -1
 ```
 
+**Multi-Model Orchestration Demo (Weather + Baseball):**
+
+```zsh
+# Run Weather and Baseball models together
+dotnet run --project DiamondX.Console -- -o
+```
+
+This demonstrates:
+
+- Weather evolves each step (temperature, wind, precipitation)
+- Weather publishes to SharedContext (`weather.temperature`, `weather.hr_modifier`, etc.)
+- Baseball model runs after Weather (dependency ordering)
+- HR distance modifier shown per inning based on conditions
+
 ## Contributing
 
 When adding new features:

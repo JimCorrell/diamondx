@@ -10,8 +10,9 @@ SimulationEngine provides the foundational infrastructure for running simulation
 
 ```text
 SimulationEngine/
-├── Core/           # Simulation contracts and orchestration
+├── Core/           # Simulation contracts and execution
 ├── Events/         # Event scheduling and handling
+├── Orchestration/  # Multi-model coordination
 ├── Random/         # Reproducible random number generation
 ├── State/          # State snapshots and persistence
 └── Time/           # Simulation clock and time management
@@ -27,6 +28,13 @@ SimulationEngine/
 - **SimulationParameters** - Type-safe, mutable parameter collection
 - **SimulationMetrics** - Engine-level performance tracking
 - **SimulationResult** - Run outcome with metrics and seed for reproducibility
+
+### Orchestration (`SimulationEngine.Orchestration`)
+
+- **ISimulationOrchestrator** - Coordinates multiple models in a single run
+- **SimulationOrchestrator** - Implementation with dependency resolution
+- **SharedContext** - Thread-safe cross-model communication
+- **ModelOptions** - Per-model configuration (priority, optional, parameters)
 
 ### Events (`SimulationEngine.Events`)
 
@@ -101,6 +109,35 @@ var results = runner.RunParallel(
 );
 ```
 
+## Multi-Model Orchestration Example
+
+```csharp
+using SimulationEngine.Orchestration;
+
+// Create orchestrator
+var orchestrator = new SimulationOrchestrator();
+
+// Register models with dependencies
+orchestrator.Register(new WeatherSimulation(), new ModelOptions { Priority = 10 });
+orchestrator.Register(new BaseballGameSimulation(config), new ModelOptions(), "WeatherSimulation");
+
+// Initialize with shared context
+orchestrator.Initialize(context);
+
+// Subscribe to lifecycle events
+orchestrator.BeforeModelStep += (s, e) => Console.WriteLine($"Starting {e.Model.Id}");
+orchestrator.BarrierReached += (s, e) => Console.WriteLine($"Step {e.StepNumber} complete");
+
+// Run until all models complete
+while (orchestrator.Step() == OrchestratorStepResult.Continue)
+{
+    // Models execute in dependency order each step
+}
+
+// Access shared data
+var temperature = orchestrator.SharedContext.Get<double>("temperature");
+```
+
 ## Roadmap
 
 ### Phase 1: Foundation ✅
@@ -112,14 +149,14 @@ var results = runner.RunParallel(
 - [x] **SeedableRandomSource** - Reproducible RNG with seed tracking for deterministic runs
 - [x] **SimulationMetrics** - Engine-level performance tracking (steps/sec, time ratio, event count)
 
-### Phase 2: Multi-Model Orchestration
+### Phase 2: Multi-Model Orchestration ✅
 
-- [ ] **ISimulationOrchestrator** - Coordinates multiple simulation models within a single run, controlling time advancement and ensuring deterministic execution order
-- [ ] **Model Registration** - Register multiple `ISimulation` instances with execution priority, allowing models to run in defined order each time step
-- [ ] **Dependency Management** - Declare dependencies between models (e.g., Weather model runs before Baseball model) with automatic topological ordering
-- [ ] **Barrier Synchronization** - Ensure all models complete their step before advancing to the next time step, preventing race conditions
-- [ ] **Shared Context** - Allow models to share state through a common context without direct coupling
-- [ ] **Model Lifecycle Hooks** - BeforeStep/AfterStep hooks for cross-cutting concerns like logging or validation
+- [x] **ISimulationOrchestrator** - Coordinates multiple simulation models within a single run, controlling time advancement and ensuring deterministic execution order
+- [x] **Model Registration** - Register multiple `ISimulation` instances with execution priority, allowing models to run in defined order each time step
+- [x] **Dependency Management** - Declare dependencies between models (e.g., Weather model runs before Baseball model) with automatic topological ordering
+- [x] **Barrier Synchronization** - Ensure all models complete their step before advancing to the next time step, preventing race conditions
+- [x] **Shared Context** - Allow models to share state through a common context without direct coupling
+- [x] **Model Lifecycle Hooks** - BeforeStep/AfterStep hooks for cross-cutting concerns like logging or validation
 
 ### Phase 3: Enhanced Event System
 
@@ -204,11 +241,11 @@ Parallel.For(0, 10000, i =>
 {
     var simulation = new BaseballGameSimulation(config);
     var context = CreateContext(seeds[i], parameters);
-    
+
     simulation.Initialize(context);
     while (!simulation.IsComplete)
         simulation.Step();
-    
+
     // Capture results
     var game = simulation.Game!;
     var homeWon = game.HomeScore > game.AwayScore;
@@ -221,7 +258,7 @@ Parallel.For(0, 10000, i =>
 # Run 10,000 simulations
 dotnet run --project DiamondX.Console -- -mc
 
-# Run 162 games (one season)  
+# Run 162 games (one season)
 dotnet run --project DiamondX.Console -- -mc --season
 
 # Run single simulation

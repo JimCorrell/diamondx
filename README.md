@@ -19,9 +19,9 @@ DiamondX is a text-based baseball simulation engine built with .NET 8. It models
 
 ```zsh
 git clone https://github.com/triple-play-labs/diamondx.git
-cd diamondx
+cd diamondx/src
 dotnet build
-dotnet run --project src/DiamondX.Console
+dotnet run --project DiamondX.Console
 ```
 
 ## Sample Output
@@ -45,19 +45,19 @@ Giants Win!
 
 ```text
 diamondx/
-├── diamondx.sln
 ├── src/
-│   ├── DiamondX.Console/     # Executable entry point
-│   ├── DiamondX.Core/        # Baseball domain library
+│   ├── diamondx.sln            # Solution file
+│   ├── DiamondX.Console/       # Executable entry point
+│   ├── DiamondX.Core/          # Baseball domain library
 │   │   ├── Events/
 │   │   ├── Models/
 │   │   ├── Simulation/
 │   │   └── State/
-│   └── SimulationEngine/     # Generic simulation framework
+│   └── SimulationEngine/       # Generic simulation framework
 │       ├── Events/
 │       └── Random/
 └── tests/
-    └── DiamondX.Tests/       # NUnit tests
+    └── DiamondX.Tests/         # NUnit tests
 ```
 
 ## Architecture
@@ -108,6 +108,7 @@ var pitcher = new Pitcher(
 ## Running Tests
 
 ```zsh
+cd src
 dotnet test
 ```
 

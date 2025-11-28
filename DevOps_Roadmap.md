@@ -445,7 +445,7 @@ This roadmap outlines the implementation of a mature, fully functional DevOps pi
 If starting from scratch, prioritize these items for immediate value:
 
 1. ✅ **Week 1**: Basic CI/CD pipeline with build + tests (`.github/workflows/ci.yml`) — **DONE**
-2. ⬜ **Week 1**: Branch protection rules on main branch
+2. ✅ **Week 1**: Branch protection rules on main branch — **DONE** (1 review required, status checks)
 3. ✅ **Week 2**: Code coverage reporting with minimum threshold — **DONE** (Codecov integration)
 4. ✅ **Week 3**: Docker containerization with multi-stage builds — **DONE** (`docker/Dockerfile`)
 5. ✅ **Week 4**: Dependabot setup for automated dependency updates — **DONE** (NuGet, Actions, Docker)

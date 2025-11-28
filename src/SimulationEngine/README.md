@@ -105,60 +105,69 @@ var results = runner.RunParallel(
 
 ### Phase 1: Foundation ✅
 
-- [x] Core simulation abstractions (ISimulation, ISimulationContext)
-- [x] Simulation runner with single and parallel execution
-- [x] Clock with discrete-event, fixed-step, and real-time modes
-- [x] State snapshots with JSON serialization
-- [x] Seedable RNG for reproducibility
-- [x] Engine-level metrics (steps/sec, time ratio, event count)
+- [x] **ISimulation / ISimulationContext** - Core contracts defining how simulation models interact with the engine
+- [x] **SimulationRunner** - Executes single simulations or parallel Monte Carlo runs with seed management
+- [x] **SimulationClock** - Time management with discrete-event, fixed-step, and real-time modes
+- [x] **IStateManager / InMemoryStateManager** - Snapshot persistence for state capture and replay
+- [x] **SeedableRandomSource** - Reproducible RNG with seed tracking for deterministic runs
+- [x] **SimulationMetrics** - Engine-level performance tracking (steps/sec, time ratio, event count)
 
-### Phase 2: Enhanced Event System
+### Phase 2: Multi-Model Orchestration
 
-- [ ] **Event Correlation** - Track causal chains between events
-- [ ] **Event Filtering** - Subscribe to specific event types
-- [ ] **Event Replay** - Replay event streams from logs
-- [ ] **Async Event Handlers** - Support for `Task`-based handlers
-- [ ] **Event Batching** - Process multiple events per step for performance
+- [ ] **ISimulationOrchestrator** - Coordinates multiple simulation models within a single run, controlling time advancement and ensuring deterministic execution order
+- [ ] **Model Registration** - Register multiple `ISimulation` instances with execution priority, allowing models to run in defined order each time step
+- [ ] **Dependency Management** - Declare dependencies between models (e.g., Weather model runs before Baseball model) with automatic topological ordering
+- [ ] **Barrier Synchronization** - Ensure all models complete their step before advancing to the next time step, preventing race conditions
+- [ ] **Shared Context** - Allow models to share state through a common context without direct coupling
+- [ ] **Model Lifecycle Hooks** - BeforeStep/AfterStep hooks for cross-cutting concerns like logging or validation
 
-### Phase 3: Advanced State Management
+### Phase 3: Enhanced Event System
 
-- [ ] **Persistent Storage** - File-based and database snapshot backends
-- [ ] **Incremental Snapshots** - Delta-based state for large simulations
-- [ ] **State Branching** - Fork simulation from any snapshot
-- [ ] **State Comparison** - Diff snapshots for debugging
-- [ ] **Compression** - Reduce snapshot storage size
+- [ ] **Event Correlation** - Track causal chains between events by assigning correlation IDs, enabling root-cause analysis
+- [ ] **Event Filtering** - Subscribe handlers to specific event types or patterns, reducing unnecessary processing
+- [ ] **Event Replay** - Replay event streams from persisted logs to reproduce exact simulation behavior
+- [ ] **Async Event Handlers** - Support `Task`-based handlers for I/O-bound operations without blocking the simulation
+- [ ] **Event Batching** - Process multiple events per step to improve throughput for high-frequency event simulations
 
-### Phase 4: Execution Modes
+### Phase 4: Advanced State Management
 
-- [ ] **Checkpointing** - Automatic periodic snapshots
-- [ ] **Pause/Resume** - Suspend and continue simulations
-- [ ] **Step Debugging** - Step through simulation with inspection
-- [ ] **Conditional Breakpoints** - Pause on specific conditions
-- [ ] **Time Travel** - Jump to any snapshot and continue
+- [ ] **Persistent Storage** - File-based and database snapshot backends for long-running simulations and disaster recovery
+- [ ] **Incremental Snapshots** - Delta-based state capture for large simulations, storing only what changed since last snapshot
+- [ ] **State Branching** - Fork simulation from any snapshot to explore "what-if" scenarios without losing the original timeline
+- [ ] **State Comparison** - Diff two snapshots to identify exactly what changed, useful for debugging and validation
+- [ ] **Compression** - Reduce snapshot storage size using compression algorithms for efficient disk usage
 
-### Phase 5: Observability
+### Phase 5: Execution Modes
 
-- [ ] **Structured Logging** - Integration with ILogger
-- [ ] **Tracing** - OpenTelemetry support for distributed simulations
-- [ ] **Custom Metrics** - Domain-specific metric registration
-- [ ] **Real-time Monitoring** - Expose metrics via endpoints
-- [ ] **Profiling Hooks** - Identify performance bottlenecks
+- [ ] **Checkpointing** - Automatic periodic snapshots at configurable intervals for crash recovery
+- [ ] **Pause/Resume** - Suspend simulation mid-run and continue later, preserving all state
+- [ ] **Step Debugging** - Step through simulation one tick at a time with full state inspection
+- [ ] **Conditional Breakpoints** - Pause simulation when specific conditions are met (e.g., score tied in 9th inning)
+- [ ] **Time Travel** - Jump backward or forward to any snapshot and continue simulation from that point
 
-### Phase 6: Distribution & Scale
+### Phase 6: Observability
 
-- [ ] **Distributed Execution** - Run across multiple machines
-- [ ] **Work Partitioning** - Split large simulations
-- [ ] **Result Aggregation** - Combine parallel run results
-- [ ] **Cloud Integration** - Azure/AWS execution backends
-- [ ] **Container Support** - Docker-based simulation workers
+- [ ] **Structured Logging** - Integration with `ILogger` for consistent, queryable log output
+- [ ] **Tracing** - OpenTelemetry support for distributed tracing across simulation components
+- [ ] **Custom Metrics** - Allow domain models to register their own metrics (e.g., batting average, ERA) alongside engine metrics
+- [ ] **Real-time Monitoring** - Expose metrics via HTTP endpoints for dashboards and alerting
+- [ ] **Profiling Hooks** - Identify performance bottlenecks by measuring time spent in each model/component
 
-### Phase 7: Analysis & Visualization
+### Phase 7: Distribution & Scale
 
-- [ ] **Statistical Analysis** - Built-in result aggregation
-- [ ] **Sensitivity Analysis** - Parameter impact assessment
-- [ ] **Confidence Intervals** - Monte Carlo convergence detection
-- [ ] **Export Formats** - CSV, JSON, Parquet output
-- [ ] **Visualization Hooks** - Integration points for UI
+- [ ] **Distributed Execution** - Run simulation across multiple machines for large-scale Monte Carlo
+- [ ] **Work Partitioning** - Split large parameter sweeps across workers with automatic load balancing
+- [ ] **Result Aggregation** - Combine results from parallel workers into unified statistics
+- [ ] **Cloud Integration** - Azure Batch / AWS Lambda execution backends for serverless scaling
+- [ ] **Container Support** - Docker-based simulation workers for consistent execution environments
+
+### Phase 8: Analysis & Visualization
+
+- [ ] **Statistical Analysis** - Built-in aggregation (mean, std dev, percentiles) across Monte Carlo runs
+- [ ] **Sensitivity Analysis** - Measure how parameter changes impact outcomes to identify key drivers
+- [ ] **Confidence Intervals** - Detect Monte Carlo convergence and estimate required sample size
+- [ ] **Export Formats** - Export results to CSV, JSON, Parquet for external analysis tools
+- [ ] **Visualization Hooks** - Integration points for UI frameworks to render simulation state in real-time
 
 ## Design Principles
 

@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulationEngine", "Simulat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiamondX.Tests", "..\tests\DiamondX.Tests\DiamondX.Tests.csproj", "{B2A3C7D0-E8A9-4C5E-8F24-B2B85E4C2B2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiamondX.Weather", "DiamondX.Weather\DiamondX.Weather.csproj", "{538F9618-559E-4F8C-AEF7-9E3713269F46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{B2A3C7D0-E8A9-4C5E-8F24-B2B85E4C2B2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2A3C7D0-E8A9-4C5E-8F24-B2B85E4C2B2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2A3C7D0-E8A9-4C5E-8F24-B2B85E4C2B2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{538F9618-559E-4F8C-AEF7-9E3713269F46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{538F9618-559E-4F8C-AEF7-9E3713269F46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{538F9618-559E-4F8C-AEF7-9E3713269F46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{538F9618-559E-4F8C-AEF7-9E3713269F46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

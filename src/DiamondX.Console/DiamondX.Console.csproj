@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DiamondX.Core\DiamondX.Core.csproj" />
+    <ProjectReference Include="..\DiamondX.Weather\DiamondX.Weather.csproj" />
   </ItemGroup>
 
 </Project>

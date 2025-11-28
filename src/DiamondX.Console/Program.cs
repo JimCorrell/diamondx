@@ -4,8 +4,10 @@ using System.Diagnostics;
 using DiamondX.Core;
 using DiamondX.Core.Models;
 using DiamondX.Core.Simulation;
+using DiamondX.Weather;
 using SimulationEngine.Core;
 using SimulationEngine.Events;
+using SimulationEngine.Orchestration;
 using SimulationEngine.Random;
 using SimulationEngine.State;
 using SimulationEngine.Time;
@@ -15,6 +17,7 @@ using SimulationEngine.Time;
 
 // Check command line args for simulation mode
 bool runMonteCarlo = args.Contains("--monte-carlo") || args.Contains("-mc");
+bool runOrchestrated = args.Contains("--orchestrated") || args.Contains("-o");
 int numSimulations = 10000;
 
 // Parse number of simulations - support presets and custom counts
@@ -44,6 +47,7 @@ if (args.Contains("--help") || args.Contains("-h"))
     Console.WriteLine("Options:");
     Console.WriteLine("  (no args)        Run a single verbose game");
     Console.WriteLine("  -mc, --monte-carlo  Run Monte Carlo simulations");
+    Console.WriteLine("  -o, --orchestrated  Run multi-model Weather+Baseball demo");
     Console.WriteLine();
     Console.WriteLine("Simulation count (with -mc):");
     Console.WriteLine("  -1, --single     Run 1 simulation");
@@ -56,6 +60,7 @@ if (args.Contains("--help") || args.Contains("-h"))
     Console.WriteLine("  dotnet run -mc -1             # One silent simulation");
     Console.WriteLine("  dotnet run -mc --season       # 162-game season sim");
     Console.WriteLine("  dotnet run -mc -n=50000       # 50,000 simulations");
+    Console.WriteLine("  dotnet run -o                 # Weather + Baseball orchestrated");
     return;
 }
 
@@ -125,6 +130,12 @@ if (runMonteCarlo)
         giantsLineup, dodgersLineup,
         giantsPitcher, dodgersPitcher,
         numSimulations);
+}
+else if (runOrchestrated)
+{
+    RunOrchestratedDemo(
+        giantsLineup, dodgersLineup,
+        giantsPitcher, dodgersPitcher);
 }
 else
 {
@@ -282,4 +293,139 @@ static void RunMonteCarloSimulation(
     Console.WriteLine($"│    Time elapsed: {stopwatch.ElapsedMilliseconds:N0} ms                                         │");
     Console.WriteLine($"│    Simulations/sec: {numSimulations / stopwatch.Elapsed.TotalSeconds:N0}                                  │");
     Console.WriteLine("└────────────────────────────────────────────────────────────────┘");
+}
+
+/// <summary>
+/// Runs a multi-model orchestrated simulation with Weather affecting Baseball outcomes.
+/// </summary>
+static void RunOrchestratedDemo(
+    List<Player> homeTeam,
+    List<Player> awayTeam,
+    Pitcher homePitcher,
+    Pitcher awayPitcher)
+{
+    Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+    Console.WriteLine("║     ⚾🌤️ DiamondX Multi-Model Orchestration Demo 🌤️⚾       ║");
+    Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
+    Console.WriteLine();
+    Console.WriteLine("  This demo shows Weather and Baseball models running together,");
+    Console.WriteLine("  with weather conditions affecting game play in real-time.");
+    Console.WriteLine();
+
+    // Create the orchestrator
+    var orchestrator = new SimulationOrchestrator();
+
+    // Create weather simulation with "windy day" conditions
+    var weatherConfig = WeatherConfig.WindyDay();
+    var weatherSim = new WeatherSimulation(weatherConfig);
+
+    // Create baseball game simulation
+    var gameConfig = new GameConfig
+    {
+        HomeTeam = homeTeam,
+        AwayTeam = awayTeam,
+        HomeTeamName = "Giants",
+        AwayTeamName = "Dodgers",
+        HomePitcher = homePitcher,
+        AwayPitcher = awayPitcher
+    };
+    var baseballSim = new BaseballGameSimulation(gameConfig);
+
+    // Register models - Weather runs first (priority 100), Baseball depends on it
+    orchestrator.Register(weatherSim, new ModelOptions { Priority = 100 });
+    orchestrator.Register(baseballSim, new ModelOptions { Priority = 50 }, "Weather");
+
+    // Set up simulation infrastructure
+    var random = new SeedableRandomSource(42);
+    var clock = new SimulationClock();
+    var events = new EventScheduler();
+    var state = new InMemoryStateManager(() => (clock.TickCount, clock.CurrentTime));
+    var parameters = new SimulationParameters();
+    parameters.Set("verbose", false);
+    var metrics = new SimulationMetrics(Guid.NewGuid());
+    var ctx = new SimulationContext(Guid.NewGuid(), random, clock, events, state, parameters, metrics);
+
+    // Initialize all models
+    orchestrator.Initialize(ctx);
+
+    Console.WriteLine($"  Initial Weather: {weatherSim.Current.GetDescription()}");
+    Console.WriteLine($"  HR Modifier: {weatherSim.Current.GetHomeRunModifier():+0.0;-0.0;0} feet");
+    Console.WriteLine();
+    Console.WriteLine("┌────────────────────────────────────────────────────────────────┐");
+    Console.WriteLine("│  Inning │ Score       │ Weather                    │ HR Mod  │");
+    Console.WriteLine("├────────────────────────────────────────────────────────────────┤");
+
+    var lastInning = 0;
+    var stepCount = 0;
+    const int maxSteps = 500;
+
+    // Run the orchestrated simulation
+    while (!baseballSim.IsComplete && stepCount < maxSteps)
+    {
+        orchestrator.Step();
+        stepCount++;
+
+        // Print status when inning changes
+        var currentInning = baseballSim.Game?.CurrentInning ?? 0;
+        if (currentInning != lastInning && baseballSim.Game != null)
+        {
+            var game = baseballSim.Game;
+            var weather = weatherSim.Current;
+            var inningStr = $"{currentInning}".PadLeft(2);
+            var scoreStr = $"DOD {game.AwayScore} - SF {game.HomeScore}";
+            var weatherDesc = GetShortWeatherDesc(weather);
+            var hrMod = weather.GetHomeRunModifier();
+
+            Console.WriteLine($"│    {inningStr}   │ {scoreStr,-11} │ {weatherDesc,-26} │ {hrMod,+6:+0.0;-0.0;0}ft │");
+            lastInning = currentInning;
+        }
+    }
+
+    Console.WriteLine("└────────────────────────────────────────────────────────────────┘");
+    Console.WriteLine();
+
+    // Final results
+    if (baseballSim.Game != null)
+    {
+        var game = baseballSim.Game;
+        var finalWeather = weatherSim.Current;
+
+        Console.WriteLine("┌────────────────────────────────────────────────────────────────┐");
+        Console.WriteLine("│                          FINAL RESULT                          │");
+        Console.WriteLine("├────────────────────────────────────────────────────────────────┤");
+        Console.WriteLine($"│  Dodgers: {game.AwayScore}                                                      │");
+        Console.WriteLine($"│  Giants:  {game.HomeScore}                                                      │");
+        Console.WriteLine($"│  Winner:  {(game.HomeScore > game.AwayScore ? "Giants" : "Dodgers"),-10}                                           │");
+        Console.WriteLine("├────────────────────────────────────────────────────────────────┤");
+        Console.WriteLine($"│  Final Weather: {finalWeather.GetDescription(),-40}   │");
+        Console.WriteLine($"│  Simulation Steps: {stepCount,-5}                                        │");
+        Console.WriteLine("└────────────────────────────────────────────────────────────────┘");
+    }
+
+    orchestrator.Dispose();
+}
+
+static string GetShortWeatherDesc(WeatherConditions w)
+{
+    var wind = w.WindSpeed >= 15 ? $"💨{w.WindSpeed:F0}mph" : "";
+    var temp = $"{w.Temperature:F0}°F";
+    var sky = w.Sky switch
+    {
+        SkyCondition.Clear => "☀️",
+        SkyCondition.PartlyCloudy => "⛅",
+        SkyCondition.Cloudy => "☁️",
+        SkyCondition.Overcast => "🌥️",
+        _ => ""
+    };
+    var precip = w.Precipitation switch
+    {
+        PrecipitationType.Drizzle => "🌧️",
+        PrecipitationType.Light => "🌧️",
+        PrecipitationType.Moderate => "🌧️🌧️",
+        PrecipitationType.Heavy => "⛈️",
+        PrecipitationType.Thunderstorm => "⛈️⚡",
+        _ => ""
+    };
+
+    return $"{sky} {temp} {wind} {precip}".Trim();
 }

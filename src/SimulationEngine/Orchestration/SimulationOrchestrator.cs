@@ -332,7 +332,7 @@ internal sealed class ModelRegistration : IModelRegistration
 /// <summary>
 /// Context wrapper that provides model-specific parameters and shared context access.
 /// </summary>
-internal sealed class OrchestratedModelContext : ISimulationContext
+public sealed class OrchestratedModelContext : ISimulationContext
 {
     private readonly ISimulationContext _baseContext;
     private readonly ISharedContext _sharedContext;

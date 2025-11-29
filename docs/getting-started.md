@@ -52,7 +52,7 @@ dotnet run --project DiamondX.Console -- -mc
 dotnet run --project DiamondX.Console -- -mc -n=50000
 
 # Single simulation (debugging)
-dotnet run --project DiamondX.Console -- -mc -1
+dotnet run --project DiamondX.Console -- -mc -n=1
 
 # Full season (162 games)
 dotnet run --project DiamondX.Console -- -mc --season

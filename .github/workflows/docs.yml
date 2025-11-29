@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v4.0.0@c1a7d4e2e2e6e2b2e2e2e2e2e2e2e2e2e2e2e2e2
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1

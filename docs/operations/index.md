@@ -72,7 +72,7 @@ Console output includes:
 
 ## Runbooks
 
-- [Runbooks](runbooks/) - Operational procedures
+- Runbooks (coming soon) - Operational procedures
 
 ## Configuration
 
